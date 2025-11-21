@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 
 const Home = () => {
-	let [task, setTask] = useState("");
-	let [list, setList] = useState([]);
+	const [task, setTask] = useState("");
+	const [list, setList] = useState([]);
 
 	const USER = "Carlos";
 	const API_USERS = `https://playground.4geeks.com/todo/users/${USER}`;
@@ -10,9 +10,8 @@ const Home = () => {
 
 	const getTasks = () => {
 		fetch(API_USERS)
-			.then(resp => resp.json())
-			.then(data => setList(data.todos))
-			.catch(err => console.error(err));
+			.then((resp) => resp.json())
+			.then((data) => setList(data.todos));
 	};
 
 	useEffect(() => {
@@ -28,19 +27,28 @@ const Home = () => {
 					label: task.trim(),
 					is_done: false
 				})
-			})
-				.then(() => {
-					setTask("");
-					getTasks();
-				});
+			}).then(() => {
+				setTask("");
+				getTasks();
+			});
 		}
 	};
 
 	const deleteTask = (id) => {
 		fetch(`https://playground.4geeks.com/todo/todos/${id}`, {
 			method: "DELETE"
-		})
-			.then(() => getTasks());
+		}).then(() => getTasks());
+	};
+
+	const clearAll = () => {
+		fetch(API_USERS, { method: "DELETE" })
+			.then(() =>
+				fetch(API_USERS, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" }
+				})
+			)
+			.then(() => setList([]));
 	};
 
 	return (
@@ -58,9 +66,7 @@ const Home = () => {
 
 			<ul className="todo-list">
 				{list.length === 0 ? (
-					<li className="todo-item text-muted">
-						Nothing to do — add a task
-					</li>
+					<li className="todo-item text-muted">Nothing to do — add a task</li>
 				) : (
 					list.map((item) => (
 						<li key={item.id} className="todo-item">
@@ -76,6 +82,10 @@ const Home = () => {
 			<div className="footer-count">
 				{list.length} item{list.length !== 1 ? "s" : ""} left
 			</div>
+
+			<button className="btn btn-danger mt-3" onClick={clearAll}>
+				Delete all tasks
+			</button>
 		</div>
 	);
 };
