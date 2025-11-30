@@ -8,10 +8,35 @@ const Home = () => {
 	const API_USERS = `https://playground.4geeks.com/todo/users/${USER}`;
 	const API_TODOS = `https://playground.4geeks.com/todo/todos/${USER}`;
 
+	const createUser = () => {
+		fetch(API_USERS, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify([])
+		})
+			.then(resp => {
+				console.log("usuario creado exitosamente");
+				getTasks();
+			})
+			.catch(error => console.log(error));
+	};
+
 	const getTasks = () => {
 		fetch(API_USERS)
-			.then((resp) => resp.json())
-			.then((data) => setList(data.todos));
+			.then((resp) => {
+				console.log(resp.status);
+				if (resp.status === 404) {
+					createUser();
+					return null;
+				}
+				return resp.json();
+			})
+			.then((data) => {
+				if (data) {
+					setList(data.todos);
+				}
+			})
+			.catch(error => console.log(error));
 	};
 
 	useEffect(() => {
@@ -42,13 +67,10 @@ const Home = () => {
 
 	const clearAll = () => {
 		fetch(API_USERS, { method: "DELETE" })
-			.then(() =>
-				fetch(API_USERS, {
-					method: "POST",
-					headers: { "Content-Type": "application/json" }
-				})
-			)
-			.then(() => setList([]));
+			.then(() => {
+				createUser();
+				setList([]);
+			});
 	};
 
 	return (
